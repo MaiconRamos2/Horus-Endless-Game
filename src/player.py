@@ -37,7 +37,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = pygame.Rect(5, 350, 100, 100)
 
         # Velocidade vertical inicial do pulo
-        self.jump_speed = ALTURA_PULO_PERSONAGEM
+        self.jump_speed = 0
+        self.is_jumping = False
 
     def update(self, pressed_keys):
         self.index_running = self.index_running + 1
@@ -46,31 +47,26 @@ class Player(pygame.sprite.Sprite):
         self.image_running = self.images_running[self.index_running]
         self.curr_image = self.image_running
 
-        # Aplicar a gravidade se o jogador não estiver pulando
-        if not pressed_keys[K_SPACE]:
-            if self.rect.top < 350:
-                self.rect.y += self.jump_speed
-                # Aplicar a aceleração devida à gravidade
-                self.jump_speed += ACELERACAO_GRAVIDADE
-            else:
-                self.rect.y = 350
-                self.jump_speed = ALTURA_PULO_PERSONAGEM
+        # Verificar se o jogador está pulando
+        if pressed_keys[K_SPACE] and not self.is_jumping:
+            self.is_jumping = True
+            self.jump_speed = -ALTURA_PULO_PERSONAGEM
+
+        # Aplicar a gravidade se o jogador estiver no ar
+        if self.is_jumping:
+            self.rect.y += self.jump_speed
+            self.jump_speed += ACELERACAO_GRAVIDADE
+
+        # Verificar se o jogador atingiu o chão
+        if self.rect.bottom >= 450:
+            self.rect.bottom = 450
+            self.is_jumping = False
+            self.jump_speed = 0
 
         if pressed_keys[K_LEFT]:
             self.rect.move_ip(-5, 0)
         if pressed_keys[K_RIGHT]:
             self.rect.move_ip(5, 0)
-        if pressed_keys[K_SPACE]:
-            self.index_jumping = self.index_jumping + 1
-            if self.index_jumping >= len(self.images_jumping):
-                self.index_jumping = 0
-            self.image_jumping = self.images_jumping[self.index_jumping]
-            self.curr_image = self.image_jumping
-
-            self.rect.move_ip(0, -ALTURA_PULO_PERSONAGEM)
-        if not pressed_keys[K_SPACE]:
-            if self.rect.top < 350:
-                self.rect.y += self.jump_speed
 
         if self.rect.left < 0:
             self.rect.left = 0
